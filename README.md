@@ -33,7 +33,7 @@ wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/install.sh | 
 [lukastautz.github.io/ev3php](https://lukastautz.github.io/ev3php)
 
 ## Examples
-[examples/](https://github.com/lukastautz/ev3php/tree/main/examples)
+[ev3php/examples](https://github.com/lukastautz/ev3php/tree/main/examples)
 
 ## License
 ev3php is licensed under the GNU General Public License 3.0 (check out [LICENSE](https://github.com/lukastautz/ev3php/blob/main/LICENSE)).
