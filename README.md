@@ -24,7 +24,7 @@ To run an ev3php program, you have to stop/remove brickman, because of otherwise
 If you want to use the installer, first you have to add internet access to the ev3 ([e.g. with USB cable or WiFi-Dongle](https://www.ev3dev.org/docs/networking)).
 Then you have to run the following command:
 ```bash
-wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/installer.sh | sudo sh
+wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/install.sh | sudo sh
 ```
 
 ## Usae
