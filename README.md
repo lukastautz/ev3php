@@ -20,7 +20,7 @@ ev3php supports nearly all functions of ev3dev, if you think I have forgotten on
 ## Installation:
 At first you have to install ev3dev on a microSD-card ([tutorial](https://www.ev3dev.org/docs/getting-started)).
 <br>
-To run an ev3php program, you have to stop/remove brickman, because of otherwise they would get in each other's way. I recommend using the installer, but with the installer, you **are NOT able to use another programming alnguages**!. It is not documented how to use ev3php without the installer, but it's clear: you have to download/compile the `ev3php.so` and include it in the `php.ini` with `extension=ev3php.so`.
+To run an ev3php program, you have to stop/remove brickman, because of otherwise they would get in each other's way. I recommend using the installer, but with the installer, you **are NOT able to use another programming language**! It is not documented how to use ev3php without the installer, but it's clear: you have to download/compile the `ev3php.so` and include it in the `php.ini` with `extension=ev3php.so`.
 If you want to use the installer, first you have to add internet access to the ev3 ([e.g. with USB cable or WiFi-Dongle](https://www.ev3dev.org/docs/networking)).
 Then you have to run the following command:
 ```bash
