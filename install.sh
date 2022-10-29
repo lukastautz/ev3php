@@ -7,23 +7,12 @@ apt upgrade -y
 echo "PermitRootLogin yes" > /etc/ssh/sshd_config
 sudo service sshd restart
 apt install php7.0-cli -y
-sudo service apache2 stop
-dpkg -P --force-depends apache2-bin apache2-data apache2-utils apache2 dh-python libboost-python1.62.0 libpython-stdlib libpython2.7 libpython2.7-minimal libpython2.7-stdlib libpython3-stdlib libpython3.5-minimal libpython3.5-stdlib micropython micropython-ev3dev2 micropython-lib pybricks-micropython-lib python-minimal python2.7 python2.7-minimal python3 python3-agt python3-bluez python3-dbus python3-ev3dev python3-ev3dev2 python3-evdev python3-gattlib python3-gi python3-libpixyusb python3-minimal python3-pil python3-pkg-resources python3-plumbum python3-protobuf python3-ptvsd python3-pyudev python3-rpyc python3-serial python3-setuptools python3-six python3-smbus python3.5 python3.5-minimal bind9-host liblua5.2-0 lua5.3 python ruby ruby-did-you-mean ruby-minitest ruby-net-telnet ruby-power-assert ruby-test-unit rubygems-integration libapache2-mod-php7.0
-rm -R /etc/php/7.0/apache2
-sudo rm -R /usr/sbin/apache2
-sudo rm -R /usr/sbin/apache2ctl
-sudo rm -R /usr/lib/apache2
-sudo rm -R /usr/share/apache2
+systemctl stop bluetooth
+systemctl stop brickman
+systemctl disable bluetooth
+systemctl disable brickman
+dpkg -P --force-depends dh-python libboost-python1.62.0 libpython-stdlib libpython2.7 libpython2.7-minimal libpython2.7-stdlib libpython3-stdlib libpython3.5-minimal libpython3.5-stdlib micropython micropython-ev3dev2 micropython-lib pybricks-micropython-lib python-minimal python2.7 python2.7-minimal python3 python3-agt python3-bluez python3-dbus python3-ev3dev python3-ev3dev2 python3-evdev python3-gattlib python3-gi python3-libpixyusb python3-minimal python3-pil python3-pkg-resources python3-plumbum python3-protobuf python3-ptvsd python3-pyudev python3-rpyc python3-serial python3-setuptools python3-six python3-smbus python3.5 python3.5-minimal bind9-host lua5.3 python ruby ruby-did-you-mean ruby-minitest ruby-net-telnet ruby-power-assert ruby-test-unit rubygems-integration
 sudo rm -R /usr/share/man
-sudo rm -R /var/lib/apache2
-sudo rm -R /run/apache2
-sudo rm -R /var/cache/apache2
-sudo rm -R /var/lib/apache2
-sudo rm -R /var/lock/apache2
-sudo rm -R /var/log/apache2
-sudo rm -R /var/run/apache2
-sudo rm -R /var/lib/php/modules/7.0/apache2
-sudo rm -R /var/lib/php/modules/7.0/fpm
 apt autoclean
 apt --purge autoremove
 cd /
@@ -34,7 +23,7 @@ cd /ev3php
 mkdir php
 cp -r /usr/lib/php/20151012/*.so /ev3php/php
 cd php
-rm xmlreader.so opcache.so wddx.so xsl.so sysvmsg.so sysvshm.so phar.so sysvsem.so shmop.so exif.so gettext.so pdo.so xmlwriter.so tokenizer.so xml.so 
+rm opcache.so sysvmsg.so sysvshm.so phar.so sysvsem.so shmop.so exif.so gettext.so pdo.so tokenizer.so
 cd ..
 rm -r /usr/lib/php
 rm -r /etc/php/7.0
@@ -89,8 +78,6 @@ echo "; extension=curl.so ; You have to execute 'apt install php7.0-curl'" >> /e
 echo "extension=ev3php.so" >> /etc/php/7.0/cli/php.ini
 ln /etc/php/7.0/cli/php.ini /ev3php/php/php.ini
 echo 200 > /sys/bus/iio/devices/trigger0/sampling_frequency
-systemctl disable bluetooth
-systemctl disable brickman
 systemctl mask systemd-journald.socket
 systemctl mask systemd-journald.service
 systemctl mask systemd-logind.service
