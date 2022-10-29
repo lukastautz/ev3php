@@ -1593,12 +1593,14 @@ void ev3_set_led(enum ev3_led_name led, enum ev3_led_color color, int32_t value)
 	lseek(__ev3_led_fd[led + color], 0, SEEK_SET);
 	int l = write(__ev3_led_fd[led + color], buffer, strlen(buffer));
 }
+/*
 int32_t ev3_get_led(enum ev3_led_name led, enum ev3_led_color color) {
 	char buffer[16];
 	lseek(__ev3_led_fd[led + color], 0, SEEK_SET);
 	buffer[read(__ev3_led_fd[led + color], buffer, 16)] = 0;
 	return atoi(buffer);
 }
+*/
 void ev3_quit_led() {
 	int i;
 	for (i = 0; i < 4; i++) close(__ev3_led_fd[i]);
