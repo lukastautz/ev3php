@@ -400,7 +400,6 @@ ev3_sensor_ptr ev3_mode_sensor_by_name(ev3_sensor_ptr sensor, char* mode) {
 		if (strcmp(sensor->modes[i], mode) == 0) return ev3_mode_sensor(sensor, i);
 	return sensor;
 }
-*/
 ev3_sensor_ptr ev3_driver_sensor(ev3_sensor_ptr sensor, const char* driver) {
 	if (sensor == NULL) return NULL;
 	int32_t was_open = (sensor->bin_fd >= 0);
@@ -430,6 +429,7 @@ ev3_sensor_ptr ev3_driver_sensor(ev3_sensor_ptr sensor, const char* driver) {
 	if (was_open) ev3_open_sensor(sensor);
 	return sensor;
 }
+*/
 enum ev3_motor_identifier get_motor_identifier(char* buffer) {
 	if (strcmp(buffer, "fi-l12-ev3") == 0) return FI_L12_EV3;
 	if (strcmp(buffer, "lego-ev3-l-motor") == 0) return LEGO_EV3_L_MOTOR;
@@ -1415,7 +1415,7 @@ void ev3_text_lcd_tiny(int32_t x, int32_t y, const char* text) {
 		}
 	}
 }
-void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h) {
+void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h, char black) {
 	int32_t a, b;
 	int32_t minx = x;
 	int32_t miny = y;
@@ -1429,9 +1429,15 @@ void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h) {
 	if (miny < 0) miny = 0;
 	if (maxx >= EV3_X_LCD) maxx = EV3_X_LCD-1;
 	if (maxy >= EV3_Y_LCD) maxy = EV3_Y_LCD-1;
-	for (a = minx; a <= maxx; a++)
-		for (b = miny; b <= maxy; b++)
-			EV3_PIXEL_SET(a, b);
+	if (black == 1) {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++)
+				EV3_PIXEL_SET(a, b);
+	} else {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++)
+				EV3_PIXEL_UNSET(a, b);
+	}
 }
 void ev3_rectangle_lcd_out(int32_t x, int32_t y, int32_t w, int32_t h) {
 	int32_t a;
@@ -1460,7 +1466,7 @@ void ev3_rectangle_lcd_out(int32_t x, int32_t y, int32_t w, int32_t h) {
 		for (a = miny+1; a <= maxy-1; a++)
 			EV3_PIXEL_SET(maxx, a);
 }
-void ev3_circle_lcd(int32_t x, int32_t y, int32_t r) {
+void ev3_circle_lcd(int32_t x, int32_t y, int32_t r, char black) {
 	int32_t a, b;
 	int32_t minx = x-r;
 	int32_t miny = y-r;
@@ -1474,12 +1480,19 @@ void ev3_circle_lcd(int32_t x, int32_t y, int32_t r) {
 	if (miny < 0) miny = 0;
 	if (maxx >= EV3_X_LCD) maxx = EV3_X_LCD-1;
 	if (maxy >= EV3_Y_LCD) maxy = EV3_Y_LCD-1;
-	for (a = minx; a <= maxx; a++)
-		for (b = miny; b <= maxy; b++) {
-			if ((a-x)*(a-x) + (b-y)*(b-y) >= r*r)
-				continue;
-			EV3_PIXEL_SET(a, b);
-		}
+	if (black == 1) {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++) {
+				if ((a-x)*(a-x) + (b-y)*(b-y) >= r*r) continue;
+				EV3_PIXEL_SET(a, b);
+			}
+	} else {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++) {
+				if ((a-x)*(a-x) + (b-y)*(b-y) >= r*r) continue;
+				EV3_PIXEL_UNSET(a, b);
+			}
+	}
 }
 void ev3_circle_lcd_out(int32_t x, int32_t y, int32_t r) {
 	int32_t a, b;
@@ -1495,7 +1508,7 @@ void ev3_circle_lcd_out(int32_t x, int32_t y, int32_t r) {
 		if (!once) MIRROR_PIXEL_SET(a, b)
 	}
 }
-void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry) {
+void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry, char black) {
 	int32_t a, b;
 	int32_t minx = x-rx;
 	int32_t miny = y-ry;
@@ -1509,11 +1522,19 @@ void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry) {
 	if (miny < 0) miny = 0;
 	if (maxx >= EV3_X_LCD) maxx = EV3_X_LCD-1;
 	if (maxy >= EV3_Y_LCD) maxy = EV3_Y_LCD-1;
-	for (a = minx; a <= maxx; a++)
-		for (b = miny; b <= maxy; b++) {
-			if ((a-x)*(a-x)*ry*ry + (b-y)*(b-y)*rx*rx >= rx*rx*ry*ry) continue;
-			EV3_PIXEL_SET(a, b);
-		}
+	if (black == 1) {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++) {
+				if ((a-x)*(a-x)*ry*ry + (b-y)*(b-y)*rx*rx >= rx*rx*ry*ry) continue;
+				EV3_PIXEL_SET(a, b);
+			}
+	} else {
+		for (a = minx; a <= maxx; a++)
+			for (b = miny; b <= maxy; b++) {
+				if ((a-x)*(a-x)*ry*ry + (b-y)*(b-y)*rx*rx >= rx*rx*ry*ry) continue;
+				EV3_PIXEL_UNSET(a, b);
+			}
+	}
 }
 void ev3_ellipse_lcd_out(int32_t x, int32_t y, int32_t rx, int32_t ry) {
 	int32_t a, b;
