@@ -92,12 +92,12 @@ echo "ExecStart=/bin/sh -c \"sleep 60;php ev3.php 2>&1 >> stdout.txt\"" >> /etc/
 echo "Restart=always" >> /etc/systemd/system/ev3php.service
 echo "[Install]" >> /etc/systemd/system/ev3php.service
 echo "WantedBy=multi-user.target" >> /etc/systemd/system/ev3php.service
-echo '#!/bin/sh' >> /bin/ev3php
-echo 'sudo systemctl stop ev3php' >> /bin/ev3php
-echo 'sudo pkill "php ev3.php"' >> /bin/ev3php
-echo 'cd /ev3php' >> /bin/ev3php
-echo 'sudo php ev3.php' >> /bin/ev3php
-chmod 555 /bin/ev3php
+echo '#!/bin/sh' >> /bin/ev3
+echo 'sudo systemctl stop ev3php' >> /bin/ev3
+echo 'sudo pkill php' >> /bin/ev3
+echo 'cd /ev3php' >> /bin/ev3
+echo 'sudo php ev3.php' >> /bin/ev3
+chmod 555 /bin/ev3
 wget -O /ev3php/php/ev3php.so "$EV3PHP_PLUGIN_URL"
 echo "<?php ev3_lcd_start(); exec('hostname -I', \$data); ev3_lcd_normal(0, 10, \$data[0]); ev3_button_start(); for (;;) { if (ev3_button_pressed(BUTTON_BACK)) { exec('shutdown now'); } elseif (ev3_button_pressed(BUTTON_CENTER)) { ev3_speak(LANG_EN, 'My IP is ' . \$data[0]); }}" >> /ev3php/ev3.php
 chmod -R 777 /ev3php
