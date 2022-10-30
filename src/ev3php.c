@@ -26,8 +26,8 @@ ev3php uses ev3c <https://github.com/theZiz/ev3c>, wich is also licensed under t
 
 
 // Macros
-#define PHP_STR_CONSTANT(name, value) zend_register_stringl_constant(name, sizeof(name) - 1, value, sizeof(value) - 1, 0, 0)
-#define PHP_INT_CONSTANT(name, value) zend_register_long_constant(name, sizeof(name) - 1, value, 0, 0)
+#define PHP_STR_CONSTANT(name, value) zend_register_stringl_constant(name, sizeof(name) - 1, value, sizeof(value) - 1, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
+#define PHP_INT_CONSTANT(name, value) zend_register_long_constant(name, sizeof(name) - 1, value, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
 #define PARSE_ARGS(format, ...) if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), format, __VA_ARGS__) == FAILURE) return
 #define php_str zend_string *
 #define c_str(php_string) ZSTR_VAL(php_string)
@@ -887,7 +887,7 @@ PHP_FUNCTION(ev3_speak) {
     php_str _text;
     long _volume = 100;
     long _speed = 175;
-    PARSE_ARGS("SS|l|l", &_lang, &_text, &_volume, &_speed);
+    PARSE_ARGS("SS|ll", &_lang, &_text, &_volume, &_speed);
     char call[56 + SPEAKER_MAX_TEXT_LENGTH];
     sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
@@ -905,7 +905,7 @@ PHP_FUNCTION(ev3_speak_background) {
     php_str _text;
     long _volume = 100;
     long _speed = 175;
-    PARSE_ARGS("SS|l|l", &_lang, &_text, &_volume, &_speed);
+    PARSE_ARGS("SS|ll", &_lang, &_text, &_volume, &_speed);
     char call[57 + SPEAKER_MAX_TEXT_LENGTH];
     sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null&", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
