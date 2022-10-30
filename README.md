@@ -53,7 +53,7 @@ connmanctl> quit
 ```
 
 ## Usage
-The main program is in `/ev3php/ev3.php`. If you have edited it and don't want to reboot every time.., there is a solution: Simply run `ev3php` in the terminal and you will see the output of the program in the terminal. If you want to log things and doesn't want to start a ssh session every time, you can easy output to standard output, e.g. with `echo` or `printf` or similar. The output is saved in `/ev3php/stdout.txt`. If you want to install a PHP extension, you can copy the .so file in `/ev3php/php` and edit the `/ev3php/php/php.ini`.
+The main program is in `/ev3php/ev3.php`. If you have edited it and don't want to reboot every time.., there is a solution: Simply run `ev3` in the terminal and you will see the output of the program in the terminal. If you want to log things and doesn't want to start a ssh session every time, you can easy output to standard output, e.g. with `echo` or `printf` or similar. The output is saved in `/ev3php/stdout.txt`. If you want to install a PHP extension, you can copy the .so file in `/ev3php/php` and edit the `/ev3php/php/php.ini`.
 
 ## Documentation
 [lukastautz.github.io/ev3php](https://lukastautz.github.io/ev3php)
