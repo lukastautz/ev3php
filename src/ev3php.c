@@ -875,7 +875,7 @@ PHP_FUNCTION(ev3_sensor_end) {
 
 /* SPEAKER */
 
-// ev3_speak(string lang, string text, int volume, int speed);
+// ev3_speak(string lang, string text [, int volume, int speed]);
 // Speaks a text and waits until finished.
 // <lang> is en (English), fr (French), de (German) and similar
 // <volume> is 0 - 200, default: 100
@@ -894,7 +894,7 @@ PHP_FUNCTION(ev3_speak) {
 }
 
 
-// ev3_speak_background(string lang, string text, int volume, int speed);
+// ev3_speak_background(string lang, string text [, int volume, int speed]);
 // Speaks a text in background.
 // <lang> is en (English), fr (French), de (German) and similar
 // <volume> is 0 - 200, default: 100
