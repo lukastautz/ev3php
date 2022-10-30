@@ -7,5 +7,7 @@ Simple run `./build.sh` for building. Afterwards, the ev3php.so is in the direct
 Alternatively, you can cross-compile it with `cross.sh`.
 <br>
 **Warning**: Building ev3php from source on the ev3 itself needs time, usually ~30min, I reccommend cross-compling it in docker ([tutorial](https://www.ev3dev.org/docs/tutorials/using-docker-to-cross-compile)), with `cross.sh`, wich needs only ~1min.
+<br>
+Do not use `ev3c_src.c`! It's only for test purposes!
 * * *
 Copyright (C) 2022 Lukas Tautz
