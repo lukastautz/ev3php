@@ -893,7 +893,6 @@ PHP_FUNCTION(ev3_speak) {
     system(call);
 }
 
-
 // ev3_speak_background(string lang, string text [, int volume, int speed]);
 // Speaks a text in background.
 // <lang> is en (English), fr (French), de (German) and similar
