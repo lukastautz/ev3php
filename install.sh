@@ -101,7 +101,7 @@ echo 'cd /ev3php' >> /bin/ev3php
 echo 'php ev3.php' >> /bin/ev3php
 chmod 555 /bin/ev3php
 wget -O /ev3php/php/ev3php.so "$EV3PHP_PLUGIN_URL"
-echo "<?php ev3_lcd_start(); exec('hostname -I', \$data); ev3_lcd_normal(0, 10, \$data[0]); ev3_button_start(); for (;;) { if (ev3_button_pressed(BUTTON_BACK)) { exec('shutdown now'); } elseif (ev3_button_pressed(BUTTON_CENTER)) { ev3_speak('My IP is ' . \$data[0]); }}" >> /ev3php/ev3.php
+echo "<?php ev3_lcd_start(); exec('hostname -I', \$data); ev3_lcd_normal(0, 10, \$data[0]); ev3_button_start(); for (;;) { if (ev3_button_pressed(BUTTON_BACK)) { exec('shutdown now'); } elseif (ev3_button_pressed(BUTTON_CENTER)) { ev3_speak(LANG_EN, 'My IP is ' . \$data[0]); }}" >> /ev3php/ev3.php
 chmod -R 777 /ev3php
 rm /etc/systemd/system/getty.target.wants/getty@tty1.service
 systemctl daemon-reload
