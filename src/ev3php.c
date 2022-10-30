@@ -1,5 +1,5 @@
 /*
-EV3PHP v0.8 <https://github.com/lukastautz/ev3php>
+EV3PHP v0.9 <https://github.com/lukastautz/ev3php>
 Copyright (C) 2022 Lukas Tautz
 
 This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ ev3php uses ev3c <https://github.com/theZiz/ev3c>, wich is also licensed under t
 #include <php.h>
 #include "ev3c.c"
 
+
 // Macros
 #define PHP_STR_CONSTANT(name, value) zend_register_stringl_constant(name, sizeof(name) - 1, value, sizeof(value) - 1, 0, 0)
 #define PHP_INT_CONSTANT(name, value) zend_register_long_constant(name, sizeof(name) - 1, value, 0, 0)
@@ -31,8 +32,7 @@ ev3php uses ev3c <https://github.com/theZiz/ev3c>, wich is also licensed under t
 #define php_str zend_string *
 #define c_str(php_string) ZSTR_VAL(php_string)
 #define SPEAKER_MAX_TEXT_LENGTH 2500
-#define EV3PHP_EXTNAME "ev3php"
-#define EV3PHP_VERSION "0.8"
+#define EV3PHP_VERSION "0.9"
 
 
 // Init function
@@ -183,12 +183,14 @@ PHP_FUNCTION(ev3_lcd_rectangle) {
     ev3_rectangle_lcd_out(x, y, w, h);
 }
 
-// ev3_lcd_rectangle_filled(int x, int y, int w, int h);
+// ev3_lcd_rectangle_filled(int x, int y, int w, int h [, bool black]);
 // Add filled rectangle at <x>, <y> with width <w> and height <h>.
+// If <black> is false, the rectangle will be white and all black pixels inside removed.
 PHP_FUNCTION(ev3_lcd_rectangle_filled) {
     long x, y, w, h;
-    PARSE_ARGS("llll", &x, &y, &w, &h);
-    ev3_rectangle_lcd(x, y, w, h);
+    zend_bool black = 1;
+    PARSE_ARGS("llll|b", &x, &y, &w, &h, &black);
+    ev3_rectangle_lcd(x, y, w, h, (char)black);
 }
 
 // ev3_lcd_circle(int x, int y, int r);
@@ -199,12 +201,14 @@ PHP_FUNCTION(ev3_lcd_circle) {
     ev3_circle_lcd_out(x, y, r);
 }
 
-// ev3_lcd_circle_filled(int x, int y, int r);
+// ev3_lcd_circle_filled(int x, int y, int r [, bool black]);
 // Add filled circle at <x>, <y> with radius <r>. (<x>, <y> are the center of the circle)
+// If <black> is false, the circle will be white and all black pixels inside removed.
 PHP_FUNCTION(ev3_lcd_circle_filled) {
     long x, y, r;
-    PARSE_ARGS("lll", &x, &y, &r);
-    ev3_circle_lcd(x, y, r);
+    zend_bool black = 1;
+    PARSE_ARGS("lll|b", &x, &y, &r, &black);
+    ev3_circle_lcd(x, y, r, (char)black);
 }
 
 // ev3_lcd_ellipse(int x, int y, int rx, int ry);
@@ -215,12 +219,14 @@ PHP_FUNCTION(ev3_lcd_ellipse) {
     ev3_ellipse_lcd_out(x, y, rx, ry);
 }
 
-// ev3_lcd_ellipse_filled(int x, int y, int rx, int ry);
+// ev3_lcd_ellipse_filled(int x, int y, int rx, int ry [, bool black]);
 // Add filled ellipse at <x>, <y> with radius <rx> and <ry>. (<x>, <y> are the center of the ellipse)
+// If <black> is false, the ellipse will be white and all black pixels inside removed.
 PHP_FUNCTION(ev3_lcd_ellipse_filled) {
     long x, y, rx, ry;
-    PARSE_ARGS("llll", &x, &y, &rx, &ry);
-    ev3_ellipse_lcd(x, y, rx, ry);
+    zend_bool black = 1;
+    PARSE_ARGS("llll|b", &x, &y, &rx, &ry, &black);
+    ev3_ellipse_lcd(x, y, rx, ry, (char)black);
 }
 
 // ev3_lcd_line(int x0, int y0, int x1, int y1);
@@ -639,26 +645,6 @@ PHP_FUNCTION(ev3_sensor_info) {
     RETVAL_FALSE;
 }
 
-// bool ev3_sensor_driver(string port, string driver);
-// Sets the driver of a sensor (for example 'lego-nxt-sound')
-// <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_driver) {
-    php_str _port;
-    php_str _driver;
-    PARSE_ARGS("SS", &_port, &_driver);
-    int32_t port = atoi(c_str(_port));
-    ev3_sensor_ptr sensor = ev3_all_sensors;
-    while (sensor) {
-        if (sensor->port == port) {
-            ev3_driver_sensor(sensor, c_str(_driver));
-            RETVAL_TRUE;
-            return;
-        }
-        sensor = sensor->next;
-    }
-    RETVAL_FALSE;
-}
-
 // bool ev3_sensor_touch(string port);
 // Checks whether the touch button is pressed
 // <port> is 1, 2, 3 or 4
@@ -892,16 +878,16 @@ PHP_FUNCTION(ev3_sensor_end) {
 // ev3_speak(string lang, string text, int volume, int speed);
 // Speaks a text and waits until finished.
 // <lang> is en (English), fr (French), de (German) and similar
-// <volume> is 0 - 200, recommended: 100
-// <speed> is words per minute (80 - 450), recommended: 175
+// <volume> is 0 - 200, default: 100
+// <speed> is words per minute (80 - 450), default: 175
 // <text> maxlength is 2500 (changable in the c constant SPEAKER_MAX_TEXT_LENGTH)
 // DO NOT USE " IN <text>!
 PHP_FUNCTION(ev3_speak) {
     php_str _lang;
     php_str _text;
-    long _volume;
-    long _speed;
-    PARSE_ARGS("SSll", &_lang, &_text, &_volume, &_speed);
+    long _volume = 100;
+    long _speed = 175;
+    PARSE_ARGS("SS|l|l", &_lang, &_text, &_volume, &_speed);
     char call[56 + SPEAKER_MAX_TEXT_LENGTH];
     sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
@@ -911,16 +897,16 @@ PHP_FUNCTION(ev3_speak) {
 // ev3_speak_background(string lang, string text, int volume, int speed);
 // Speaks a text in background.
 // <lang> is en (English), fr (French), de (German) and similar
-// <volume> is 0 - 200, recommended: 100
-// <speed> is words per minute (80 - 450), recommended: 175
+// <volume> is 0 - 200, default: 100
+// <speed> is words per minute (80 - 450), default: 175
 // <text> maxlength is 2500 (changable in the c constant SPEAKER_MAX_TEXT_LENGTH)
 // DO NOT USE " IN <text>!
 PHP_FUNCTION(ev3_speak_background) {
     php_str _lang;
     php_str _text;
-    long _volume;
-    long _speed;
-    PARSE_ARGS("SSll", &_lang, &_text, &_volume, &_speed);
+    long _volume = 100;
+    long _speed = 175;
+    PARSE_ARGS("SS|l|l", &_lang, &_text, &_volume, &_speed);
     char call[57 + SPEAKER_MAX_TEXT_LENGTH];
     sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null&", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
@@ -979,7 +965,6 @@ zend_function_entry ev3php_functions[] = {
     // SENSORS
     PHP_FE(ev3_sensor_start, NULL)
     PHP_FE(ev3_sensor_info, NULL)
-    PHP_FE(ev3_sensor_driver, NULL)
     PHP_FE(ev3_sensor_touch, NULL)
     PHP_FE(ev3_sensor_ultrasonic, NULL)
     PHP_FE(ev3_sensor_color, NULL)
