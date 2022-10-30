@@ -1,7 +1,7 @@
 #!/bin/sh
 # ev3php installer
 # Copyright (C) 2022 Lukas Tautz
-EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-0.8/ev3php.so
+EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-0.9/ev3php.so
 apt update
 apt upgrade -y
 echo "PermitRootLogin yes" > /etc/ssh/sshd_config
@@ -100,5 +100,5 @@ echo 'php ev3.php' >> /bin/ev3php
 systemctl daemon-reload
 systemctl enable ev3php
 wget -O /ev3php/php/ev3php.so "$EV3PHP_PLUGIN_URL"
-echo "<?php ev3_lcd_start(); ev3_lcd_normal(0, 10, 'Hello World');" >> /ev3php/ev3.php
+echo "<?php ev3_lcd_start(); ev3_lcd_normal(0, 10, 'Hello World'); for(;;);" >> /ev3php/ev3.php
 reboot now
