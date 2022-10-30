@@ -1,11 +1,11 @@
 #!/bin/sh
 # ev3php module builder for crosscompiler
 # Copyright (C) 2022 Lukas Tautz
-# You need to install: build-essential and php7.0-dev
+# You need to install: arm-linux-gnueabi-gcc and php7.0-dev
 echo "ev3php module builder"
 echo ""
 phpize
-./configure --enable-ev3php CFLAGS="-O9 -Ofast" CC="arm-linux-gnueabi-gcc"
+./configure --enable-ev3php --host="arm-linux" CFLAGS="-O9 -Ofast" CC="arm-linux-gnueabi-gcc"
 make
 echo ""
 echo "Build finished"
