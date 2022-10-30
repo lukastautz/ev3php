@@ -17,9 +17,6 @@ dpkg -P --force-depends dh-python libboost-python1.62.0 libpython-stdlib libpyth
 sudo rm -R /usr/share/man
 apt autoclean
 apt --purge autoremove
-cd /
-rm -R /root
-rm -R /home
 mkdir /ev3php
 cd /ev3php
 mkdir php
