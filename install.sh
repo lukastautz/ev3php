@@ -5,14 +5,16 @@ EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-
 apt update
 apt upgrade -y
 echo "PermitRootLogin yes" > /etc/ssh/sshd_config
-service sshd restart
+sudo service sshd restart
 apt install php7.0-cli -y
 systemctl stop bluetooth
 systemctl stop brickman
+systemctl stop ev3-bluetooth
 systemctl disable bluetooth
 systemctl disable brickman
+systemctl disable ev3-bluetooth
 dpkg -P --force-depends dh-python libboost-python1.62.0 libpython-stdlib libpython2.7 libpython2.7-minimal libpython2.7-stdlib libpython3-stdlib libpython3.5-minimal libpython3.5-stdlib micropython micropython-ev3dev2 micropython-lib pybricks-micropython-lib python-minimal python2.7 python2.7-minimal python3 python3-agt python3-bluez python3-dbus python3-ev3dev python3-ev3dev2 python3-evdev python3-gattlib python3-gi python3-libpixyusb python3-minimal python3-pil python3-pkg-resources python3-plumbum python3-protobuf python3-ptvsd python3-pyudev python3-rpyc python3-serial python3-setuptools python3-six python3-smbus python3.5 python3.5-minimal bind9-host lua5.3 python ruby ruby-did-you-mean ruby-minitest ruby-net-telnet ruby-power-assert ruby-test-unit rubygems-integration
-rm -R /usr/share/man
+sudo rm -R /usr/share/man
 apt autoclean
 apt --purge autoremove
 cd /
@@ -39,7 +41,7 @@ echo "serialize_precision = 17" >> /etc/php/7.0/cli/php.ini
 echo "zend.enable_gc = On" >> /etc/php/7.0/cli/php.ini
 echo "expose_php = Off" >> /etc/php/7.0/cli/php.ini
 echo "max_execution_time = 0" >> /etc/php/7.0/cli/php.ini
-echo "max_input_time = 0" >> /etc/php/7.0/cli/php.ini
+echo "max_input_time = 600" >> /etc/php/7.0/cli/php.ini
 echo "memory_limit = 56M" >> /etc/php/7.0/cli/php.ini
 echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" >> /etc/php/7.0/cli/php.ini
 echo "display_errors = On" >> /etc/php/7.0/cli/php.ini
@@ -98,9 +100,10 @@ echo 'sudo systemctl stop ev3php' >> /bin/ev3php
 echo 'cd /ev3php' >> /bin/ev3php
 echo 'php ev3.php' >> /bin/ev3php
 chmod 555 /bin/ev3php
-systemctl daemon-reload
-systemctl enable ev3php
 wget -O /ev3php/php/ev3php.so "$EV3PHP_PLUGIN_URL"
 echo "<?php ev3_lcd_start(); exec('hostname -I', \$data); ev3_lcd_normal(0, 10, \$data[0]); ev3_button_start(); for (;;) { if (ev3_button_pressed(BUTTON_BACK)) { exec('shutdown now'); } elseif (ev3_button_pressed(BUTTON_CENTER)) { ev3_speak('My IP is ' . \$data[0]); }}" >> /ev3php/ev3.php
 chmod -R 777 /ev3php
+rm /etc/systemd/system/getty.target.wants/getty@tty1.service
+systemctl daemon-reload
+systemctl enable ev3php
 reboot now
