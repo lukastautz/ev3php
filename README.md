@@ -28,6 +28,30 @@ wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/install.sh | 
 ```
 **Important**: If you don't use ev3dev stretch, I don't know whether you will have to compile ev3php yourself.
 
+## WiFi connect
+If you want to connnect to a wifi network with a wifi dongle, you can use `connmanctl`:
+```bash
+robot@ev3dev:~$ connmanctl
+Error getting VPN connections: The name net.connman.vpn was not provided by any
+connmanctl> enable wifi
+Enabled wifi
+connmanctl> scan wifi
+Scan completed for wifi
+connmanctl> services
+     AH04044914           wifi_e8de27077de3_41483034303434393134_managed_psk
+     Frissie              wifi_e8de27077de3_46726973736965_managed_psk
+     ruijgt gast          wifi_e8de27077de3_7275696a67742067617374_managed_psk
+     schuur               wifi_e8de27077de3_736368757572_managed_psk
+connmanctl> agent on
+Agent registered
+connmanctl> connect wifi_e8de27077de3_41483034303434393134_managed_psk
+Agent RequestInput wifi_e8de27077de3_41483034303434393134_managed_psk
+   Passphrase = [ Type=psk, Requirement=mandatory ]
+Passphrase? [YOUR_PASSPHRASE]
+Connected wifi_e8de27077de3_41483034303434393134_managed_psk
+connmanctl> quit
+```
+
 ## Usage
 The main program is in `/ev3php/ev3.php`. If you have edited it and don't want to reboot every time.., there is a solution: Simply run `ev3php` in the terminal and you will see the output of the program in the terminal. If you want to log things and doesn't want to start a ssh session every time, you can easy output to standard output, e.g. with `echo` or `printf` or similar. The output is saved in `/ev3php/stdout.txt`. If you want to install a PHP extension, you can copy the .so file in `/ev3php/php` and edit the `/ev3php/php/php.ini`.
 
