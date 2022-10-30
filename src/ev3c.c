@@ -176,7 +176,7 @@ enum ev3_led_color {
 	GREEN_LED = 0,
 	RED_LED = 1
 };
-int32_t ev3_read_file(char* file, char* buffer, int32_t size) {
+static int32_t ev3_read_file(char* file, char* buffer, int32_t size) {
 	int32_t fd = open(file, O_RDONLY);
 	if (fd < 0) return fd;
 	int32_t c = read(fd, buffer, size);
@@ -185,7 +185,7 @@ int32_t ev3_read_file(char* file, char* buffer, int32_t size) {
 	close(fd);
 	return 0;
 }
-int32_t ev3_write_file(char* file, char* buffer, int32_t size) {
+static int32_t ev3_write_file(char* file, char* buffer, int32_t size) {
 	int32_t fd = open(file, O_WRONLY);
 	if (fd < 0) return fd;
 	int32_t c = write(fd, buffer, size);
@@ -202,7 +202,7 @@ enum ev3_bin_data_format_enum get_data_format(char* buffer) {
 	if (strcmp(buffer, "float") == 0) return FLOAT;
 	return S32;
 }
-void load_sensor(ev3_sensor_ptr sensor, int32_t nr) {
+static void load_sensor(ev3_sensor_ptr sensor, int32_t nr) {
 	ev3_string buffer;
 	char file[1024];
 	sprintf(file, "/sys/class/lego-sensor/sensor%i/driver_name", nr);
@@ -248,7 +248,7 @@ void load_sensor(ev3_sensor_ptr sensor, int32_t nr) {
 	for (sensor->mode = 0; sensor->mode < sensor->mode_count; sensor->mode++)
 		if (strcmp(sensor->modes[sensor->mode], buffer) == 0) break;
 }
-ev3_sensor_ptr ev3_load_sensors(void) {
+static ev3_sensor_ptr ev3_load_sensors(void) {
 	DIR *d;
 	struct dirent *dir;
 	ev3_sensor_ptr first_sensor = NULL;
@@ -268,7 +268,7 @@ ev3_sensor_ptr ev3_load_sensors(void) {
 	}
 	return first_sensor;
 }
-void ev3_close_sensor(ev3_sensor_ptr sensor) {
+static void ev3_close_sensor(ev3_sensor_ptr sensor) {
 	if (sensor == NULL) return;
 	if (sensor->bin_fd >= 0) {
 		close(sensor->bin_fd);
@@ -281,7 +281,7 @@ void ev3_close_sensor(ev3_sensor_ptr sensor) {
 			sensor->val_fd[i] = -1;
 		}
 }
-void ev3_delete_sensors(ev3_sensor_ptr sensors) {
+static void ev3_delete_sensors(ev3_sensor_ptr sensors) {
 	while (sensors) {
 		ev3_sensor_ptr next = sensors->next;
 		ev3_close_sensor(sensors);
@@ -289,7 +289,7 @@ void ev3_delete_sensors(ev3_sensor_ptr sensors) {
 		sensors = next;
 	}
 }
-ev3_sensor_ptr ev3_open_sensor(ev3_sensor_ptr sensor) {
+static ev3_sensor_ptr ev3_open_sensor(ev3_sensor_ptr sensor) {
 	if (sensor == NULL) return NULL;
 	if (sensor->bin_fd < 0) {
 		char file[1024];
@@ -305,28 +305,7 @@ ev3_sensor_ptr ev3_open_sensor(ev3_sensor_ptr sensor) {
 		}
 	return sensor;
 }
-/*
-ev3_sensor_ptr ev3_search_sensor_by_name(ev3_sensor_ptr sensors, char* name, int32_t not_ready) {
-	ev3_sensor_ptr sensor = sensors;
-	while (sensor) {
-		if (strcmp(sensor->driver_name, name) == 0) {
-			if (not_ready == 0) return sensor;
-			if (sensor->bin_fd < 0) return sensor;
-		}
-		sensor = sensor->next;
-	}
-	return NULL;
-}
-ev3_sensor_ptr ev3_search_sensor_by_port(ev3_sensor_ptr sensors, int32_t port) {
-	ev3_sensor_ptr sensor = sensors;
-	while (sensor) {
-		if (sensor->port == port) return sensor;
-		sensor = sensor->next;
-	}
-	return NULL;
-}
-*/
-void ev3_update_sensor_bin(ev3_sensor_ptr sensor) {
+static void ev3_update_sensor_bin(ev3_sensor_ptr sensor) {
 	if (sensor == NULL) return;
 	lseek(sensor->bin_fd, 0, SEEK_SET);
 	int32_t i, r;
@@ -351,7 +330,7 @@ void ev3_update_sensor_bin(ev3_sensor_ptr sensor) {
 			break;
 	}
 }
-void ev3_update_sensor_val(ev3_sensor_ptr sensor) {
+static void ev3_update_sensor_val(ev3_sensor_ptr sensor) {
 	if (sensor == NULL) return;
 	int32_t i;
 	ev3_string buffer;
@@ -366,7 +345,7 @@ void ev3_update_sensor_val(ev3_sensor_ptr sensor) {
 		}
 	}
 }
-ev3_sensor_ptr ev3_mode_sensor(ev3_sensor_ptr sensor, int32_t mode) {
+static ev3_sensor_ptr ev3_mode_sensor(ev3_sensor_ptr sensor, int32_t mode) {
 	if (sensor == NULL) return NULL;
 	if (mode < 0) return sensor;
 	if (mode >= sensor->mode_count) return sensor;
@@ -391,52 +370,13 @@ ev3_sensor_ptr ev3_mode_sensor(ev3_sensor_ptr sensor, int32_t mode) {
 	close(fd);
 	return sensor;
 }
-/*
-ev3_sensor_ptr ev3_mode_sensor_by_name(ev3_sensor_ptr sensor, char* mode) {
-	if (sensor == NULL) return NULL;
-	if (mode == NULL) return sensor;
-	int32_t i;
-	for (i = 0; i < sensor->mode_count; i++)
-		if (strcmp(sensor->modes[i], mode) == 0) return ev3_mode_sensor(sensor, i);
-	return sensor;
-}
-ev3_sensor_ptr ev3_driver_sensor(ev3_sensor_ptr sensor, const char* driver) {
-	if (sensor == NULL) return NULL;
-	int32_t was_open = (sensor->bin_fd >= 0);
-	if (was_open) ev3_close_sensor(sensor);
-	char file[1024];
-	sprintf(file, "/sys/class/lego-port/port%i/set_device", sensor->port-1);
-	int32_t fd = open(file, O_WRONLY);
-	int32_t l = strlen(driver);
-	int32_t r = write(fd, driver, l);
-	close(fd);
-	if (l == r) {
-		sprintf(file, "/sys/class/lego-port/port%i/ev3-ports:in%i:%s/lego-sensor", sensor->port-1, sensor->port, driver);
-		DIR *d;
-		struct dirent *dir;
-		d = opendir(file);
-		int32_t nr = sensor->sensor_nr;
-		if (d) {
-			while ((dir = readdir(d)) != NULL) {
-				if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) continue;
-				break;
-			}
-			nr = atoi(&(dir->d_name[6]));
-			closedir(d);
-		}
-		load_sensor(sensor, nr);
-	}
-	if (was_open) ev3_open_sensor(sensor);
-	return sensor;
-}
-*/
-enum ev3_motor_identifier get_motor_identifier(char* buffer) {
+static enum ev3_motor_identifier get_motor_identifier(char* buffer) {
 	if (strcmp(buffer, "fi-l12-ev3") == 0) return FI_L12_EV3;
 	if (strcmp(buffer, "lego-ev3-l-motor") == 0) return LEGO_EV3_L_MOTOR;
 	if (strcmp(buffer, "lego-ev3-m-motor") == 0) return LEGO_EV3_M_MOTOR;
 	return UNKNOWN_MOTOR;
 }
-void load_motor(ev3_motor_ptr motor, int32_t nr) {
+static void load_motor(ev3_motor_ptr motor, int32_t nr) {
 	if (motor == NULL) return;
 	ev3_string buffer;
 	char file[1024];
@@ -492,7 +432,7 @@ void load_motor(ev3_motor_ptr motor, int32_t nr) {
 	ev3_read_file(file, file, EV3_STRING_LENGTH);
 	motor->max_speed = atoi(file);
 }
-ev3_motor_ptr ev3_load_motors(void) {
+static ev3_motor_ptr ev3_load_motors(void) {
 	DIR *d;
 	struct dirent *dir;
 	ev3_motor_ptr first_motor = NULL;
@@ -512,7 +452,7 @@ ev3_motor_ptr ev3_load_motors(void) {
 	}
 	return first_motor;
 }
-void ev3_close_motor(ev3_motor_ptr motor) {
+static void ev3_close_motor(ev3_motor_ptr motor) {
 	if (motor == NULL) return;
 	if (motor->duty_cycle_fd >= 0) {
 		close(motor->duty_cycle_fd);
@@ -555,7 +495,7 @@ void ev3_close_motor(ev3_motor_ptr motor) {
 		motor->command_stream = NULL;
 	}
 }
-ev3_motor_ptr ev3_open_motor(ev3_motor_ptr motor) {
+static ev3_motor_ptr ev3_open_motor(ev3_motor_ptr motor) {
 	if (motor == NULL) return NULL;
 	if (motor->duty_cycle_fd < 0) {
 		char file[1024];
@@ -609,7 +549,7 @@ ev3_motor_ptr ev3_open_motor(ev3_motor_ptr motor) {
 	}
 	return motor;
 }
-ev3_motor_ptr ev3_reset_motor(ev3_motor_ptr motor) {
+static ev3_motor_ptr ev3_reset_motor(ev3_motor_ptr motor) {
 	if (motor == NULL) return NULL;
 	int32_t was_open = (motor->duty_cycle_fd >= 0);
 	if (was_open) ev3_close_motor(motor);
@@ -623,7 +563,7 @@ ev3_motor_ptr ev3_reset_motor(ev3_motor_ptr motor) {
 	if (was_open) ev3_open_motor(motor);
 	return motor;
 }
-void ev3_delete_motors(ev3_motor_ptr motors) {
+static void ev3_delete_motors(ev3_motor_ptr motors) {
 	while (motors) {
 		ev3_motor_ptr next = motors->next;
 		ev3_close_motor(motors);
@@ -632,28 +572,7 @@ void ev3_delete_motors(ev3_motor_ptr motors) {
 		motors = next;
 	}
 }
-/*
-ev3_motor_ptr ev3_search_motor_by_identifier(ev3_motor_ptr motors, enum ev3_motor_identifier identifier, int32_t not_ready) {
-	ev3_motor_ptr motor = motors;
-	while (motor) {
-		if (motor->driver_identifier == identifier) {
-			if (not_ready == 0) return motor;
-			if (motor->duty_cycle_fd < 0) return motor;
-		}
-		motor = motor->next;
-	}
-	return NULL;
-}
-ev3_motor_ptr ev3_search_motor_by_port(ev3_motor_ptr motors, char port) {
-	ev3_motor_ptr motor = motors;
-	while (motor) {
-		if (motor->port == port) return motor;
-		motor = motor->next;
-	}
-	return NULL;
-}
-*/
-ev3_motor_ptr ev3_command_motor(ev3_motor_ptr motor, int32_t command) {
+static ev3_motor_ptr ev3_command_motor(ev3_motor_ptr motor, int32_t command) {
 	if (motor == NULL) return NULL;
 	if (command < 0) return motor;
 	if (command >= motor->command_count) return motor;
@@ -664,18 +583,7 @@ ev3_motor_ptr ev3_command_motor(ev3_motor_ptr motor, int32_t command) {
 	fflush(motor->command_stream);
 	return motor;
 }
-/*
-ev3_motor_ptr ev3_command_motor_by_name(ev3_motor_ptr motor, char* command) {
-	if (motor == NULL) return NULL;
-	if (command == NULL) return motor;
-	int32_t i;
-	for (i = 0; i < motor->command_count; i++)
-		if (strcmp(motor->commands[i], command) == 0)
-			return ev3_command_motor(motor, i);
-	return motor;
-}
-*/
-ev3_motor_ptr ev3_stop_action_motor(ev3_motor_ptr motor, int32_t stop_action) {
+static ev3_motor_ptr ev3_stop_action_motor(ev3_motor_ptr motor, int32_t stop_action) {
 	if (motor == NULL) return NULL;
 	if (stop_action < 0) return motor;
 	if (stop_action >= motor->stop_action_count) return motor;
@@ -688,7 +596,7 @@ ev3_motor_ptr ev3_stop_action_motor(ev3_motor_ptr motor, int32_t stop_action) {
 	close(fd);
 	return motor;
 }
-ev3_motor_ptr ev3_stop_action_motor_by_name(ev3_motor_ptr motor, char* stop_action) {
+static ev3_motor_ptr ev3_stop_action_motor_by_name(ev3_motor_ptr motor, char* stop_action) {
 	if (motor == NULL) return NULL;
 	if (stop_action == NULL) return motor;
 	int32_t i;
@@ -697,38 +605,7 @@ ev3_motor_ptr ev3_stop_action_motor_by_name(ev3_motor_ptr motor, char* stop_acti
 			return ev3_stop_action_motor(motor, i);
 	return motor;
 }
-/*
-int32_t ev3_get_duty_cycle(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->duty_cycle_fd, 0, SEEK_SET);
-	buffer[read(motor->duty_cycle_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-ev3_motor_ptr ev3_set_duty_cycle_sp(ev3_motor_ptr motor, int32_t value) {
-	if (motor == NULL) return NULL;
-	char buffer[32];
-	sprintf(buffer, "%i", value);
-	lseek(motor->duty_cycle_sp_fd, 0, SEEK_SET);
-	int32_t l = write(motor->duty_cycle_sp_fd, buffer, strlen(buffer));
-	return motor;
-}
-int32_t ev3_get_duty_cycle_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->duty_cycle_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->duty_cycle_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-int32_t ev3_get_speed(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->speed_fd, 0, SEEK_SET);
-	buffer[read(motor->speed_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-*/
-ev3_motor_ptr ev3_set_speed_sp(ev3_motor_ptr motor, int32_t value) {
+static ev3_motor_ptr ev3_set_speed_sp(ev3_motor_ptr motor, int32_t value) {
 	if (motor == NULL) return NULL;
 	char buffer[32];
 	sprintf(buffer, "%i", value);
@@ -736,16 +613,7 @@ ev3_motor_ptr ev3_set_speed_sp(ev3_motor_ptr motor, int32_t value) {
 	int32_t l = write(motor->speed_sp_fd, buffer, strlen(buffer));
 	return motor;
 }
-/*
-int32_t ev3_get_speed_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->speed_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->speed_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-*/
-ev3_motor_ptr ev3_set_position(ev3_motor_ptr motor, int32_t value) {
+static ev3_motor_ptr ev3_set_position(ev3_motor_ptr motor, int32_t value) {
 	if (motor == NULL) return NULL;
 	char buffer[32];
 	sprintf(buffer, "%i", value);
@@ -753,14 +621,14 @@ ev3_motor_ptr ev3_set_position(ev3_motor_ptr motor, int32_t value) {
 	int32_t l = write(motor->position_fd, buffer, strlen(buffer));
 	return motor;
 }
-int32_t ev3_get_position(ev3_motor_ptr motor) {
+static int32_t ev3_get_position(ev3_motor_ptr motor) {
 	if (motor == NULL) return 0;
 	char buffer[32];
 	lseek(motor->position_fd, 0, SEEK_SET);
 	buffer[read(motor->position_fd, buffer, 32)] = 0;
 	return atoi(buffer);
 }
-ev3_motor_ptr ev3_set_position_sp(ev3_motor_ptr motor, int32_t value) {
+static ev3_motor_ptr ev3_set_position_sp(ev3_motor_ptr motor, int32_t value) {
 	if (motor == NULL) return NULL;
 	char buffer[32];
 	sprintf(buffer, "%i", value);
@@ -768,81 +636,7 @@ ev3_motor_ptr ev3_set_position_sp(ev3_motor_ptr motor, int32_t value) {
 	int32_t l = write(motor->position_sp_fd, buffer, strlen(buffer));
 	return motor;
 }
-/*
-int32_t ev3_get_position_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->position_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->position_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-ev3_motor_ptr ev3_set_ramp_up_sp(ev3_motor_ptr motor, int32_t value) {
-	if (motor == NULL) return NULL;
-	char buffer[32];
-	sprintf(buffer, "%i", value);
-	lseek(motor->ramp_up_sp_fd, 0, SEEK_SET);
-	int32_t l = write(motor->ramp_up_sp_fd, buffer, strlen(buffer));
-	return motor;
-}
-int32_t ev3_get_ramp_up_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->ramp_up_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->ramp_up_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-ev3_motor_ptr ev3_set_ramp_down_sp(ev3_motor_ptr motor, int32_t value) {
-	if (motor == NULL) return NULL;
-	char buffer[32];
-	sprintf(buffer, "%i", value);
-	lseek(motor->ramp_down_sp_fd, 0, SEEK_SET);
-	int32_t l = write(motor->ramp_down_sp_fd, buffer, strlen(buffer));
-	return motor;
-}
-int32_t ev3_get_ramp_down_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->ramp_down_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->ramp_down_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-ev3_motor_ptr ev3_set_time_sp(ev3_motor_ptr motor, int32_t value) {
-	if (motor == NULL) return NULL;
-	char buffer[32];
-	sprintf(buffer, "%i", value);
-	lseek(motor->time_sp_fd, 0, SEEK_SET);
-	int32_t l = write(motor->time_sp_fd, buffer, strlen(buffer));
-	return motor;
-}
-int32_t ev3_get_time_sp(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char buffer[32];
-	lseek(motor->time_sp_fd, 0, SEEK_SET);
-	buffer[read(motor->time_sp_fd, buffer, 32)] = 0;
-	return atoi(buffer);
-}
-int32_t ev3_motor_state(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char file[1024];
-	sprintf(file, "/sys/class/tacho-motor/motor%i/state", motor->motor_nr);
-	ev3_read_file(file, file, 1024);
-	int32_t result = 0;
-	char* mom = file;
-	char* end;
-	while ((end = strchr(mom, ' ')) || mom) {
-		if (end) end[0] = 0;
-		if (strcmp(mom, "running") == 0) result |= MOTOR_RUNNING;
-		else if (strcmp(mom, "ramping") == 0) result |= MOTOR_RAMPING;
-		else if (strcmp(mom, "holding") == 0) result |= MOTOR_HOLDING;
-		else if (strcmp(mom, "stalled") == 0) result |= MOTOR_STALLED;
-		mom = end;
-		if (mom) mom++;
-		else break;
-	}
-	return result;
-}
-*/
-ev3_motor_ptr ev3_set_polarity(ev3_motor_ptr motor, int32_t value) {
+static ev3_motor_ptr ev3_set_polarity(ev3_motor_ptr motor, int32_t value) {
 	if (motor == NULL) return NULL;
 	char file[1024];
 	sprintf(file, "/sys/class/tacho-motor/motor%i/polarity", motor->motor_nr);
@@ -854,16 +648,6 @@ ev3_motor_ptr ev3_set_polarity(ev3_motor_ptr motor, int32_t value) {
 	close(fd);
 	return motor;
 }
-/*
-int32_t ev3_get_polarity(ev3_motor_ptr motor) {
-	if (motor == NULL) return 0;
-	char file[1024];
-	sprintf(file, "/sys/class/tacho-motor/motor%i/polarity", motor->motor_nr);
-	ev3_read_file(file, file, 1024);
-	if (strcmp(file, "inversed") == 0) return -1;
-	return 1;
-}
-*/
 static char large_font_bits[] = {
   0x00, 0x00, 0x80, 0x03, 0xE0, 0x38, 0x00, 0x63, 0x00, 0x03, 0x00, 0x0C,
   0xE0, 0x01, 0x00, 0x07, 0x00, 0x06, 0xC0, 0x00, 0x80, 0x01, 0x00, 0x00,
@@ -1320,18 +1104,18 @@ static char tiny_font_bits[] = {
   0x0A, 0x08, 0x01, 0x04, 0x04, 0x04, 0x00, 0x00, 0x01, 0x08, 0x01, 0x07,
   0x0C, 0x0E, 0x04, 0x0A, 0x11, 0x06, 0x0F, 0x08, 0x04, 0x02, 0x00, 0x05,
 };
-int32_t __fbfd, __vtfd;
-uint32_t* __fbp = NULL;
-void ev3_init_lcd() {
+static int32_t __fbfd, __vtfd;
+static uint32_t* __fbp = NULL;
+static void ev3_init_lcd() {
 	__fbfd = open("/dev/fb0", O_RDWR);
 	__fbp = (uint32_t*)mmap(0, EV3_SY_LCD, PROT_READ | PROT_WRITE, MAP_SHARED, __fbfd, 0);
 	__vtfd = open("/dev/tty", O_RDONLY);
 	ioctl(__vtfd, KDSETMODE, KD_GRAPHICS);
 }
-void ev3_clear_lcd() {
+static void ev3_clear_lcd() {
 	memset(__fbp, 255, EV3_SY_LCD);
 }
-void ev3_text_lcd_large(int32_t x, int32_t y, const char* text) {
+static void ev3_text_lcd_large(int32_t x, int32_t y, const char* text) {
 	int32_t i;
 	for (i = 0; text[i]; i++) {
 		if (text[i] < ' ' || text[i] > 127) continue;
@@ -1352,7 +1136,7 @@ void ev3_text_lcd_large(int32_t x, int32_t y, const char* text) {
 		}
 	}
 }
-void ev3_text_lcd_normal(int32_t x, int32_t y, const char* text) {
+static void ev3_text_lcd_normal(int32_t x, int32_t y, const char* text) {
 	int32_t i;
 	for (i = 0; text[i]; i++) {
 		if (text[i] < ' ' || text[i] > 127) continue;
@@ -1373,7 +1157,7 @@ void ev3_text_lcd_normal(int32_t x, int32_t y, const char* text) {
 		}
 	}
 }
-void ev3_text_lcd_small(int32_t x, int32_t y, const char* text) {
+static void ev3_text_lcd_small(int32_t x, int32_t y, const char* text) {
 	int32_t i;
 	for (i = 0; text[i]; i++) {
 		if (text[i] < ' ' || text[i] > 127) continue;
@@ -1394,7 +1178,7 @@ void ev3_text_lcd_small(int32_t x, int32_t y, const char* text) {
 		}
 	}
 }
-void ev3_text_lcd_tiny(int32_t x, int32_t y, const char* text) {
+static void ev3_text_lcd_tiny(int32_t x, int32_t y, const char* text) {
 	int32_t i;
 	for (i = 0; text[i]; i++) {
 		if (text[i] < ' ' || text[i] > 127) continue;
@@ -1415,7 +1199,7 @@ void ev3_text_lcd_tiny(int32_t x, int32_t y, const char* text) {
 		}
 	}
 }
-void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h, char black) {
+static void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h, char black) {
 	int32_t a, b;
 	int32_t minx = x;
 	int32_t miny = y;
@@ -1439,7 +1223,7 @@ void ev3_rectangle_lcd(int32_t x, int32_t y, int32_t w, int32_t h, char black) {
 				EV3_PIXEL_UNSET(a, b);
 	}
 }
-void ev3_rectangle_lcd_out(int32_t x, int32_t y, int32_t w, int32_t h) {
+static void ev3_rectangle_lcd_out(int32_t x, int32_t y, int32_t w, int32_t h) {
 	int32_t a;
 	int32_t minx = x;
 	int32_t miny = y;
@@ -1466,7 +1250,7 @@ void ev3_rectangle_lcd_out(int32_t x, int32_t y, int32_t w, int32_t h) {
 		for (a = miny+1; a <= maxy-1; a++)
 			EV3_PIXEL_SET(maxx, a);
 }
-void ev3_circle_lcd(int32_t x, int32_t y, int32_t r, char black) {
+static void ev3_circle_lcd(int32_t x, int32_t y, int32_t r, char black) {
 	int32_t a, b;
 	int32_t minx = x-r;
 	int32_t miny = y-r;
@@ -1494,7 +1278,7 @@ void ev3_circle_lcd(int32_t x, int32_t y, int32_t r, char black) {
 			}
 	}
 }
-void ev3_circle_lcd_out(int32_t x, int32_t y, int32_t r) {
+static void ev3_circle_lcd_out(int32_t x, int32_t y, int32_t r) {
 	int32_t a, b;
 	a = r;
 	for (b = 0; b <= r; b++) {
@@ -1508,7 +1292,7 @@ void ev3_circle_lcd_out(int32_t x, int32_t y, int32_t r) {
 		if (!once) MIRROR_PIXEL_SET(a, b)
 	}
 }
-void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry, char black) {
+static void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry, char black) {
 	int32_t a, b;
 	int32_t minx = x-rx;
 	int32_t miny = y-ry;
@@ -1536,7 +1320,7 @@ void ev3_ellipse_lcd(int32_t x, int32_t y, int32_t rx, int32_t ry, char black) {
 			}
 	}
 }
-void ev3_ellipse_lcd_out(int32_t x, int32_t y, int32_t rx, int32_t ry) {
+static void ev3_ellipse_lcd_out(int32_t x, int32_t y, int32_t rx, int32_t ry) {
 	int32_t a, b;
 	a = rx;
 	for (b = 0; b <= ry; b++) {
@@ -1550,7 +1334,7 @@ void ev3_ellipse_lcd_out(int32_t x, int32_t y, int32_t rx, int32_t ry) {
 		if (!once) MIRROR_PIXEL_SET(a, b)
 	}
 }
-void ev3_line_lcd(int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
+static void ev3_line_lcd(int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
 	int32_t dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
 	int32_t dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
 	int32_t err = dx+dy, e2;
@@ -1562,17 +1346,17 @@ void ev3_line_lcd(int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
 		if (e2 < dx) { err += dx; y0 += sy; }
 	}
 }
-void ev3_quit_lcd() {
+static void ev3_quit_lcd() {
 	munmap(__fbp, EV3_SY_LCD);
     close(__fbfd);
 	ioctl(__vtfd, KDSETMODE, KD_TEXT);
 	close(__vtfd);
 }
-int32_t __ev3_button_fd = -1;
-void ev3_init_button() {
+static int32_t __ev3_button_fd = -1;
+static void ev3_init_button() {
 	__ev3_button_fd = open("/dev/input/by-path/platform-gpio_keys-event", O_RDONLY);
 }
-int32_t ev3_button_pressed(enum ev3_button_identifier button) {
+static int32_t ev3_button_pressed(enum ev3_button_identifier button) {
 	uint8_t keys[(KEY_MAX + 7) / 8];
 	lseek(__ev3_button_fd, 0, SEEK_SET);
 	ioctl (__ev3_button_fd, EVIOCGKEY(sizeof keys), &keys);
@@ -1592,11 +1376,11 @@ int32_t ev3_button_pressed(enum ev3_button_identifier button) {
 	}
 	return 0;
 }
-void ev3_quit_button() {
+static void ev3_quit_button() {
 	close(__ev3_button_fd);
 }
-int32_t __ev3_led_fd[4] = {-1, -1, -1, -1};
-void ev3_init_led() {
+static int32_t __ev3_led_fd[4] = {-1, -1, -1, -1};
+static void ev3_init_led() {
 	ev3_write_file("/sys/class/leds/led0:green:brick-status/trigger", "none", 4);
 	ev3_write_file("/sys/class/leds/led0:red:brick-status/trigger", "none", 4);
 	ev3_write_file("/sys/class/leds/led1:green:brick-status/trigger", "none", 4);
@@ -1606,7 +1390,7 @@ void ev3_init_led() {
 	__ev3_led_fd[2] = open("/sys/class/leds/led1:green:brick-status/brightness", O_RDWR);
 	__ev3_led_fd[3] = open("/sys/class/leds/led1:red:brick-status/brightness", O_RDWR);
 }
-void ev3_set_led(enum ev3_led_name led, enum ev3_led_color color, int32_t value) {
+static void ev3_set_led(enum ev3_led_name led, enum ev3_led_color color, int32_t value) {
 	if (value < 0) value = 0;
 	if (value > 255) value = 255;
 	char buffer[16];
@@ -1614,24 +1398,16 @@ void ev3_set_led(enum ev3_led_name led, enum ev3_led_color color, int32_t value)
 	lseek(__ev3_led_fd[led + color], 0, SEEK_SET);
 	int l = write(__ev3_led_fd[led + color], buffer, strlen(buffer));
 }
-/*
-int32_t ev3_get_led(enum ev3_led_name led, enum ev3_led_color color) {
-	char buffer[16];
-	lseek(__ev3_led_fd[led + color], 0, SEEK_SET);
-	buffer[read(__ev3_led_fd[led + color], buffer, 16)] = 0;
-	return atoi(buffer);
-}
-*/
-void ev3_quit_led() {
+static void ev3_quit_led() {
 	int i;
 	for (i = 0; i < 4; i++) close(__ev3_led_fd[i]);
 }
-uint32_t ev3c_current() {
+static uint32_t ev3c_current() {
 	char buffer[32];
 	ev3_read_file("/sys/class/power_supply/lego-ev3-battery/current_now", buffer, 32);
 	return atoi(buffer);
 }
-uint32_t ev3c_voltage() {
+static uint32_t ev3c_voltage() {
 	char buffer[32];
 	ev3_read_file("/sys/class/power_supply/lego-ev3-battery/voltage_now", buffer, 32);
 	return atoi(buffer);
