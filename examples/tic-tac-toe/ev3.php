@@ -72,8 +72,8 @@ function drawPos($pos, $fields) {
     else if ($pos == 6) { $x = 0; $y = 2; }
     else if ($pos == 7) { $x = 1; $y = 2; }
     else if ($pos == 8) { $x = 2; $y = 2; }
-    $x = 39 + $x * 35 + 17.5;
-    $y = 12 + $y * 35 + 17.5;
+    $x = 56.5 + $x * 35;
+    $y = 29.5 + $y * 35;
     drawFields($fields);
     if ($fields[$pos] == 1) ev3_lcd_circle_filled($x, $y, 3, false);
     else ev3_lcd_circle_filled($x, $y, 3);
