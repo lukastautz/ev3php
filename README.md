@@ -67,6 +67,9 @@ The main program is in `/ev3php/ev3.php`. If you have edited it and don't want t
 ## Examples
 [ev3php/examples](https://github.com/lukastautz/ev3php/tree/main/examples)
 
+## ev3php Desktop
+ev3php Desktop is a Windows program for managing the ev3 brick. Download: [ev3php-desktop.exe](https://github.com/lukastautz/ev3php/releases/download/ev3php-desktop/ev3php-desktop.exe).
+
 ## License
 ev3php is licensed under the GNU General Public License 3.0 (check out [LICENSE](https://github.com/lukastautz/ev3php/blob/main/LICENSE)).
 <hr>
