@@ -1,5 +1,6 @@
+
 /*
-EV3PHP v0.9 <https://github.com/lukastautz/ev3php>
+EV3PHP v1.0 <https://github.com/lukastautz/ev3php>
 Copyright (C) 2022 Lukas Tautz
 
 This program is free software: you can redistribute it and/or modify
@@ -26,13 +27,15 @@ ev3php uses ev3c <https://github.com/theZiz/ev3c>, wich is also licensed under t
 
 
 // Macros
-#define PHP_STR_CONSTANT(name, value) zend_register_stringl_constant(name, sizeof(name) - 1, value, sizeof(value) - 1, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
-#define PHP_INT_CONSTANT(name, value) zend_register_long_constant(name, sizeof(name) - 1, value, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
-#define PARSE_ARGS(format, ...) if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), format, __VA_ARGS__) == FAILURE) return
-#define php_str zend_string *
-#define c_str(php_string) ZSTR_VAL(php_string)
-#define SPEAKER_MAX_TEXT_LENGTH 2500
-#define EV3PHP_VERSION "0.9"
+#define PHP_STR_CONSTANT(name, value)   zend_register_stringl_constant(name, sizeof(name) - 1, value, sizeof(value) - 1, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
+#define PHP_INT_CONSTANT(name, value)   zend_register_long_constant(name, sizeof(name) - 1, value, 0, CONST_CS | CONST_PERSISTENT) // CONST_CS: case sensitive, CONST_PERSISTENT: persistent
+#define PARSE_ARGS(format, ...)         if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), format, __VA_ARGS__) == FAILURE) return
+#define PHP_FUNCTION_BLOCK(name)        static ZEND_NAMED_FUNCTION(_internal_##name)
+#define PHP_FUNCTION_ENTRY(name)        ZEND_FENTRY(name, _internal_##name, NULL, 0)
+#define php_str                         zend_string *
+#define c_str(php_string)               ZSTR_VAL(php_string)
+#define SPEAKER_MAX_TEXT_LENGTH         2500
+#define EV3PHP_VERSION                  "1.0"
 
 
 // Init function
@@ -112,14 +115,14 @@ PHP_MINIT_FUNCTION(ev3php) {
 
 // ev3_lcd_start();
 // Starts the LCD mode
-PHP_FUNCTION(ev3_lcd_start) {
+PHP_FUNCTION_BLOCK(ev3_lcd_start) {
     ev3_init_lcd();
     ev3_clear_lcd();
 }
 
 // ev3_lcd_pixel(int x, int y);
 // Adds a black pixel
-PHP_FUNCTION(ev3_lcd_pixel) {
+PHP_FUNCTION_BLOCK(ev3_lcd_pixel) {
     long x, y;
     PARSE_ARGS("ll", &x, &y);
     EV3_PIXEL_SET(x, y);
@@ -127,7 +130,7 @@ PHP_FUNCTION(ev3_lcd_pixel) {
 
 // ev3_lcd_pixel_remove(int x, int y);
 // Removes a black pixel
-PHP_FUNCTION(ev3_lcd_pixel_remove) {
+PHP_FUNCTION_BLOCK(ev3_lcd_pixel_remove) {
     long x, y;
     PARSE_ARGS("ll", &x, &y);
     EV3_PIXEL_UNSET(x, y);
@@ -135,13 +138,13 @@ PHP_FUNCTION(ev3_lcd_pixel_remove) {
 
 // ev3_lcd_clear();
 // Clears the LCD
-PHP_FUNCTION(ev3_lcd_clear) {
+PHP_FUNCTION_BLOCK(ev3_lcd_clear) {
     ev3_clear_lcd();
 }
 
 // ev3_lcd_tiny(int x, int y, string text);
 // Write tiny <text> at <x>, <y>
-PHP_FUNCTION(ev3_lcd_tiny) {
+PHP_FUNCTION_BLOCK(ev3_lcd_tiny) {
     long x, y;
     php_str str;
     PARSE_ARGS("llS", &x, &y, &str);
@@ -150,7 +153,7 @@ PHP_FUNCTION(ev3_lcd_tiny) {
 
 // ev3_lcd_small(int x, int y, string text);
 // Write small <text> at <x>, <y>
-PHP_FUNCTION(ev3_lcd_small) {
+PHP_FUNCTION_BLOCK(ev3_lcd_small) {
     long x, y;
     php_str str;
     PARSE_ARGS("llS", &x, &y, &str);
@@ -159,7 +162,7 @@ PHP_FUNCTION(ev3_lcd_small) {
 
 // ev3_lcd_normal(int x, int y, string text);
 // Write normal <text> at <x>, <y>
-PHP_FUNCTION(ev3_lcd_normal) {
+PHP_FUNCTION_BLOCK(ev3_lcd_normal) {
     long x, y;
     php_str str;
     PARSE_ARGS("llS", &x, &y, &str);
@@ -168,7 +171,7 @@ PHP_FUNCTION(ev3_lcd_normal) {
 
 // ev3_lcd_big(int x, int y, string text);
 // Write big <text> at <x>, <y>
-PHP_FUNCTION(ev3_lcd_big) {
+PHP_FUNCTION_BLOCK(ev3_lcd_big) {
     long x, y;
     php_str str;
     PARSE_ARGS("llS", &x, &y, &str);
@@ -177,7 +180,7 @@ PHP_FUNCTION(ev3_lcd_big) {
 
 // ev3_lcd_rectangle(int x, int y, int w, int h);
 // Add rectangle at <x>, <y> with width <w> and height <h>.
-PHP_FUNCTION(ev3_lcd_rectangle) {
+PHP_FUNCTION_BLOCK(ev3_lcd_rectangle) {
     long x, y, w, h;
     PARSE_ARGS("llll", &x, &y, &w, &h);
     ev3_rectangle_lcd_out(x, y, w, h);
@@ -186,7 +189,7 @@ PHP_FUNCTION(ev3_lcd_rectangle) {
 // ev3_lcd_rectangle_filled(int x, int y, int w, int h [, bool black]);
 // Add filled rectangle at <x>, <y> with width <w> and height <h>.
 // If <black> is false, the rectangle will be white and all black pixels inside removed.
-PHP_FUNCTION(ev3_lcd_rectangle_filled) {
+PHP_FUNCTION_BLOCK(ev3_lcd_rectangle_filled) {
     long x, y, w, h;
     zend_bool black = 1;
     PARSE_ARGS("llll|b", &x, &y, &w, &h, &black);
@@ -195,7 +198,7 @@ PHP_FUNCTION(ev3_lcd_rectangle_filled) {
 
 // ev3_lcd_circle(int x, int y, int r);
 // Add circle at <x>, <y> with radius <r>. (<x>, <y> are the center of the circle)
-PHP_FUNCTION(ev3_lcd_circle) {
+PHP_FUNCTION_BLOCK(ev3_lcd_circle) {
     long x, y, r;
     PARSE_ARGS("lll", &x, &y, &r);
     ev3_circle_lcd_out(x, y, r);
@@ -204,7 +207,7 @@ PHP_FUNCTION(ev3_lcd_circle) {
 // ev3_lcd_circle_filled(int x, int y, int r [, bool black]);
 // Add filled circle at <x>, <y> with radius <r>. (<x>, <y> are the center of the circle)
 // If <black> is false, the circle will be white and all black pixels inside removed.
-PHP_FUNCTION(ev3_lcd_circle_filled) {
+PHP_FUNCTION_BLOCK(ev3_lcd_circle_filled) {
     long x, y, r;
     zend_bool black = 1;
     PARSE_ARGS("lll|b", &x, &y, &r, &black);
@@ -213,7 +216,7 @@ PHP_FUNCTION(ev3_lcd_circle_filled) {
 
 // ev3_lcd_ellipse(int x, int y, int rx, int ry);
 // Add ellipse at <x>, <y> with radius <rx> and <ry>. (<x>, <y> are the center of the ellipse)
-PHP_FUNCTION(ev3_lcd_ellipse) {
+PHP_FUNCTION_BLOCK(ev3_lcd_ellipse) {
     long x, y, rx, ry;
     PARSE_ARGS("llll", &x, &y, &rx, &ry);
     ev3_ellipse_lcd_out(x, y, rx, ry);
@@ -222,7 +225,7 @@ PHP_FUNCTION(ev3_lcd_ellipse) {
 // ev3_lcd_ellipse_filled(int x, int y, int rx, int ry [, bool black]);
 // Add filled ellipse at <x>, <y> with radius <rx> and <ry>. (<x>, <y> are the center of the ellipse)
 // If <black> is false, the ellipse will be white and all black pixels inside removed.
-PHP_FUNCTION(ev3_lcd_ellipse_filled) {
+PHP_FUNCTION_BLOCK(ev3_lcd_ellipse_filled) {
     long x, y, rx, ry;
     zend_bool black = 1;
     PARSE_ARGS("llll|b", &x, &y, &rx, &ry, &black);
@@ -231,7 +234,7 @@ PHP_FUNCTION(ev3_lcd_ellipse_filled) {
 
 // ev3_lcd_line(int x0, int y0, int x1, int y1);
 // Add line with <x0>, <y0> as start and <x1> and <y1> as end.
-PHP_FUNCTION(ev3_lcd_line) {
+PHP_FUNCTION_BLOCK(ev3_lcd_line) {
     long x0, y0, x1, y1;
     PARSE_ARGS("llll", &x0, &y0, &x1, &y1);
     ev3_line_lcd(x0, y0, x1, y1);
@@ -239,7 +242,7 @@ PHP_FUNCTION(ev3_lcd_line) {
 
 // ev3_lcd_end();
 // Exits the LCD mode
-PHP_FUNCTION(ev3_lcd_end) {
+PHP_FUNCTION_BLOCK(ev3_lcd_end) {
     ev3_quit_lcd();
 }
 
@@ -247,7 +250,7 @@ PHP_FUNCTION(ev3_lcd_end) {
 
 // ev3_button_start();
 // Starts the button mode
-PHP_FUNCTION(ev3_button_start) {
+PHP_FUNCTION_BLOCK(ev3_button_start) {
     ev3_init_button();
 }
 
@@ -260,7 +263,7 @@ PHP_FUNCTION(ev3_button_start) {
 //  BUTTON_DOWN
 //  BUTTON_CENTER
 //  BUTTON_BACK
-PHP_FUNCTION(ev3_button_pressed) {
+PHP_FUNCTION_BLOCK(ev3_button_pressed) {
     php_str _button;
     PARSE_ARGS("S", &_button);
     char *button = c_str(_button);
@@ -288,7 +291,7 @@ PHP_FUNCTION(ev3_button_pressed) {
 //  BUTTON_UP
 //  BUTTON_LEFT
 //  BUTTON_RIGHT
-PHP_FUNCTION(ev3_button_get_pressed) {
+PHP_FUNCTION_BLOCK(ev3_button_get_pressed) {
     if (ev3_button_pressed(BUTTON_BACK) == 1) {
         RETVAL_STRINGL("BUTTON_BACK", 11);
     } else if (ev3_button_pressed(BUTTON_CENTER) == 1) {
@@ -306,7 +309,7 @@ PHP_FUNCTION(ev3_button_get_pressed) {
 
 // ev3_button_end();
 // Exits the button mode
-PHP_FUNCTION(ev3_button_end) {
+PHP_FUNCTION_BLOCK(ev3_button_end) {
     ev3_quit_button();
 }
 
@@ -314,13 +317,13 @@ PHP_FUNCTION(ev3_button_end) {
 
 // int ev3_battery_current();
 // Returns the current of the battery in µA
-PHP_FUNCTION(ev3_battery_current) {
+PHP_FUNCTION_BLOCK(ev3_battery_current) {
     RETVAL_LONG(ev3c_current());
 }
 
 // int ev3_battery_voltage();
 // Returns the voltage of the battery in µV
-PHP_FUNCTION(ev3_battery_voltage) {
+PHP_FUNCTION_BLOCK(ev3_battery_voltage) {
     RETVAL_LONG(ev3c_voltage());
 }
 
@@ -328,7 +331,7 @@ PHP_FUNCTION(ev3_battery_voltage) {
 
 // ev3_led_start();
 // Starts the LED mode
-PHP_FUNCTION(ev3_led_start) {
+PHP_FUNCTION_BLOCK(ev3_led_start) {
     ev3_init_led();
 }
 
@@ -341,7 +344,7 @@ PHP_FUNCTION(ev3_led_start) {
 //  COLOR_GREEN
 //  COLOR_RED
 // Brightness is between 0 and 255
-PHP_FUNCTION(ev3_led_set) {
+PHP_FUNCTION_BLOCK(ev3_led_set) {
     php_str _led_name;
     php_str _color;
     long brightness;
@@ -370,7 +373,7 @@ PHP_FUNCTION(ev3_led_set) {
 // Supported colors:
 //  COLOR_GREEN
 //  COLOR_RED
-PHP_FUNCTION(ev3_led_color) {
+PHP_FUNCTION_BLOCK(ev3_led_color) {
     php_str _color;
     PARSE_ARGS("S", &_color);
     char *color = c_str(_color);
@@ -394,7 +397,7 @@ PHP_FUNCTION(ev3_led_color) {
 // Supported colors:
 //  COLOR_GREEN
 //  COLOR_RED
-PHP_FUNCTION(ev3_led_color_brightness) {
+PHP_FUNCTION_BLOCK(ev3_led_color_brightness) {
     php_str _color;
     long brightness;
     PARSE_ARGS("Sl", &_color, &brightness);
@@ -416,24 +419,24 @@ PHP_FUNCTION(ev3_led_color_brightness) {
 
 // ev3_led_end();
 // Exits the LED mode
-PHP_FUNCTION(ev3_led_end) {
+PHP_FUNCTION_BLOCK(ev3_led_end) {
     ev3_quit_led();
 }
 
 /* MOTORS */
 
-ev3_motor_ptr ev3_all_motors;
+static ev3_motor_ptr ev3_all_motors;
 
 // ev3_motor_start();
 // Loads all motors
-PHP_FUNCTION(ev3_motor_start) {
+PHP_FUNCTION_BLOCK(ev3_motor_start) {
     ev3_all_motors = ev3_load_motors();
 }
 
 // string|false ev3_motor_info(string port);
 // Returns the name of a motor
 // <port> is A, B, C or D
-PHP_FUNCTION(ev3_motor_info) {
+PHP_FUNCTION_BLOCK(ev3_motor_info) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     char port = toupper(c_str(_port)[0]);
@@ -452,7 +455,7 @@ PHP_FUNCTION(ev3_motor_info) {
 // Turns a motor around <degree> degrees.
 // <port> is A, B, C or D
 // <speed> is 0 - 100
-PHP_FUNCTION(ev3_motor_run) {
+PHP_FUNCTION_BLOCK(ev3_motor_run) {
     php_str _port;
     long speed, degree;
     PARSE_ARGS("Sll", &_port, &speed, &degree);
@@ -478,7 +481,7 @@ PHP_FUNCTION(ev3_motor_run) {
 // Turns a motor around <degree> degrees and let it roll out.
 // <port> is A, B, C or D
 // <speed> is 0 - 100
-PHP_FUNCTION(ev3_motor_run_without_brake) {
+PHP_FUNCTION_BLOCK(ev3_motor_run_without_brake) {
     php_str _port;
     long speed, degree;
     PARSE_ARGS("Sll", &_port, &speed, &degree);
@@ -503,7 +506,7 @@ PHP_FUNCTION(ev3_motor_run_without_brake) {
 // bool ev3_motor_stop(string port);
 // Stops a motor
 // <port> is A, B, C or D
-PHP_FUNCTION(ev3_motor_stop) {
+PHP_FUNCTION_BLOCK(ev3_motor_stop) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     char port = toupper(c_str(_port)[0]);
@@ -525,7 +528,7 @@ PHP_FUNCTION(ev3_motor_stop) {
 // Runs a motor forever.
 // <port> is A, B, C or D
 // <speed> is 0 - 100
-PHP_FUNCTION(ev3_motor_run_forever) {
+PHP_FUNCTION_BLOCK(ev3_motor_run_forever) {
     php_str _port;
     long speed;
     PARSE_ARGS("Sl", &_port, &speed);
@@ -550,7 +553,7 @@ PHP_FUNCTION(ev3_motor_run_forever) {
 // int|false ev3_motor_get_position(string port);
 // Returns the position of the motor in degree.
 // <port> is A, B, C or D
-PHP_FUNCTION(ev3_motor_get_position) {
+PHP_FUNCTION_BLOCK(ev3_motor_get_position) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     char port = toupper(c_str(_port)[0]);
@@ -569,7 +572,7 @@ PHP_FUNCTION(ev3_motor_get_position) {
 // bool ev3_motor_set_position(string port, int degree);
 // Sets the position of the motor in degree.
 // <port> is A, B, C or D
-PHP_FUNCTION(ev3_motor_set_position) {
+PHP_FUNCTION_BLOCK(ev3_motor_set_position) {
     php_str _port;
     long degree;
     PARSE_ARGS("Sl", &_port, &degree);
@@ -590,7 +593,7 @@ PHP_FUNCTION(ev3_motor_set_position) {
 // bool ev3_motor_wait(string port);
 // Waits until motor is not moving
 // <port> is A, B, C or D
-PHP_FUNCTION(ev3_motor_wait) {
+PHP_FUNCTION_BLOCK(ev3_motor_wait) {
     php_str _port;
     int32_t last_pos;
     PARSE_ARGS("S", &_port);
@@ -613,24 +616,24 @@ PHP_FUNCTION(ev3_motor_wait) {
 
 // ev3_motor_end();
 // Unload the motors
-PHP_FUNCTION(ev3_motor_end) {
+PHP_FUNCTION_BLOCK(ev3_motor_end) {
     ev3_delete_motors(ev3_all_motors);
 }
 
 /* SENSORS */
 
-ev3_sensor_ptr ev3_all_sensors;
+static ev3_sensor_ptr ev3_all_sensors;
 
 // ev3_sensor_start();
 // Loads all sensors
-PHP_FUNCTION(ev3_sensor_start) {
+PHP_FUNCTION_BLOCK(ev3_sensor_start) {
     ev3_all_sensors = ev3_load_sensors();
 }
 
 // string|false ev3_sensor_info(string port);
 // Returns the driver/name of a sensor
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_info) {
+PHP_FUNCTION_BLOCK(ev3_sensor_info) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -648,7 +651,7 @@ PHP_FUNCTION(ev3_sensor_info) {
 // bool ev3_sensor_touch(string port);
 // Checks whether the touch button is pressed
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_touch) {
+PHP_FUNCTION_BLOCK(ev3_sensor_touch) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -671,7 +674,7 @@ PHP_FUNCTION(ev3_sensor_touch) {
 // Returns the distance of the utrasonic sensor (in mm)
 // If return value is 0, it is assumed that there is no known value!
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_ultrasonic) {
+PHP_FUNCTION_BLOCK(ev3_sensor_ultrasonic) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -705,7 +708,7 @@ PHP_FUNCTION(ev3_sensor_ultrasonic) {
 //  COLOR_WHITE
 //  COLOR_BROWN
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_color) {
+PHP_FUNCTION_BLOCK(ev3_sensor_color) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -750,7 +753,7 @@ PHP_FUNCTION(ev3_sensor_color) {
 // string|false ev3_sensor_color_rgb(string port);
 // Returns the current measured color (rgb) in format "RED,GREEN,BLUE" of the color sensor
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_color_rgb) {
+PHP_FUNCTION_BLOCK(ev3_sensor_color_rgb) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -773,7 +776,7 @@ PHP_FUNCTION(ev3_sensor_color_rgb) {
 // int|false ev3_sensor_infrared_distance(string port);
 // Returns the distance measured by the infrared sensor in percent
 // <port> is 1, 2, 3 or 4
-PHP_FUNCTION(ev3_sensor_infrared_distance) {
+PHP_FUNCTION_BLOCK(ev3_sensor_infrared_distance) {
     php_str _port;
     PARSE_ARGS("S", &_port);
     int32_t port = atoi(c_str(_port));
@@ -801,7 +804,7 @@ PHP_FUNCTION(ev3_sensor_infrared_distance) {
 //  IR_BUTTON_RIGHT_UP
 //  IR_BUTTON_RIGHT_DOWN
 // The top button is NOT available because of it seems like that the sensor is stopping sending while the top button is pressed!
-PHP_FUNCTION(ev3_sensor_infrared_pressed) {
+PHP_FUNCTION_BLOCK(ev3_sensor_infrared_pressed) {
     php_str _port;
     php_str _button;
     long channel;
@@ -869,7 +872,7 @@ PHP_FUNCTION(ev3_sensor_infrared_pressed) {
 
 // ev3_sensor_end();
 // Unload the sensors
-PHP_FUNCTION(ev3_sensor_end) {
+PHP_FUNCTION_BLOCK(ev3_sensor_end) {
     ev3_delete_sensors(ev3_all_sensors);
 }
 
@@ -882,14 +885,14 @@ PHP_FUNCTION(ev3_sensor_end) {
 // <speed> is words per minute (80 - 450), default: 175
 // <text> maxlength is 2500 (changable in the c constant SPEAKER_MAX_TEXT_LENGTH)
 // DO NOT USE " IN <text>!
-PHP_FUNCTION(ev3_speak) {
+PHP_FUNCTION_BLOCK(ev3_speak) {
     php_str _lang;
     php_str _text;
     long _volume = 100;
     long _speed = 175;
     PARSE_ARGS("SS|ll", &_lang, &_text, &_volume, &_speed);
-    char call[56 + SPEAKER_MAX_TEXT_LENGTH];
-    sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null", c_str(_lang), _volume, _speed, c_str(_text));
+    char call[58 + SPEAKER_MAX_TEXT_LENGTH];
+    sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q 2>/dev/null", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
 }
 
@@ -900,88 +903,88 @@ PHP_FUNCTION(ev3_speak) {
 // <speed> is words per minute (80 - 450), default: 175
 // <text> maxlength is 2500 (changable in the c constant SPEAKER_MAX_TEXT_LENGTH)
 // DO NOT USE " IN <text>!
-PHP_FUNCTION(ev3_speak_background) {
+PHP_FUNCTION_BLOCK(ev3_speak_background) {
     php_str _lang;
     php_str _text;
     long _volume = 100;
     long _speed = 175;
     PARSE_ARGS("SS|ll", &_lang, &_text, &_volume, &_speed);
-    char call[57 + SPEAKER_MAX_TEXT_LENGTH];
-    sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q>/dev/null&", c_str(_lang), _volume, _speed, c_str(_text));
+    char call[59 + SPEAKER_MAX_TEXT_LENGTH];
+    sprintf(call, "espeak --stdout -v%s -a%i -s%i \"%s\"|aplay -q 2>/dev/null&", c_str(_lang), _volume, _speed, c_str(_text));
     system(call);
 }
 
 
 // PHP function list
-zend_function_entry ev3php_functions[] = {
+static zend_function_entry ev3php_functions[] = {
     // LCD
-    PHP_FE(ev3_lcd_start, NULL)
-    PHP_FE(ev3_lcd_pixel, NULL)
-    PHP_FE(ev3_lcd_pixel_remove, NULL)
-    PHP_FE(ev3_lcd_clear, NULL)
-    PHP_FE(ev3_lcd_tiny, NULL)
-    PHP_FE(ev3_lcd_small, NULL)
-    PHP_FE(ev3_lcd_normal, NULL)
-    PHP_FE(ev3_lcd_big, NULL)
-    PHP_FE(ev3_lcd_rectangle, NULL)
-    PHP_FE(ev3_lcd_rectangle_filled, NULL)
-    PHP_FE(ev3_lcd_circle, NULL)
-    PHP_FE(ev3_lcd_circle_filled, NULL)
-    PHP_FE(ev3_lcd_ellipse, NULL)
-    PHP_FE(ev3_lcd_ellipse_filled, NULL)
-    PHP_FE(ev3_lcd_line, NULL)
-    PHP_FE(ev3_lcd_end, NULL)
+    PHP_FUNCTION_ENTRY(ev3_lcd_start)
+    PHP_FUNCTION_ENTRY(ev3_lcd_pixel)
+    PHP_FUNCTION_ENTRY(ev3_lcd_pixel_remove)
+    PHP_FUNCTION_ENTRY(ev3_lcd_clear)
+    PHP_FUNCTION_ENTRY(ev3_lcd_tiny)
+    PHP_FUNCTION_ENTRY(ev3_lcd_small)
+    PHP_FUNCTION_ENTRY(ev3_lcd_normal)
+    PHP_FUNCTION_ENTRY(ev3_lcd_big)
+    PHP_FUNCTION_ENTRY(ev3_lcd_rectangle)
+    PHP_FUNCTION_ENTRY(ev3_lcd_rectangle_filled)
+    PHP_FUNCTION_ENTRY(ev3_lcd_circle)
+    PHP_FUNCTION_ENTRY(ev3_lcd_circle_filled)
+    PHP_FUNCTION_ENTRY(ev3_lcd_ellipse)
+    PHP_FUNCTION_ENTRY(ev3_lcd_ellipse_filled)
+    PHP_FUNCTION_ENTRY(ev3_lcd_line)
+    PHP_FUNCTION_ENTRY(ev3_lcd_end)
 
     // BUTTONS
-    PHP_FE(ev3_button_start, NULL)
-    PHP_FE(ev3_button_pressed, NULL)
-    PHP_FE(ev3_button_get_pressed, NULL)
-    PHP_FE(ev3_button_end, NULL)
+    PHP_FUNCTION_ENTRY(ev3_button_start)
+    PHP_FUNCTION_ENTRY(ev3_button_pressed)
+    PHP_FUNCTION_ENTRY(ev3_button_get_pressed)
+    PHP_FUNCTION_ENTRY(ev3_button_end)
 
     // BATTERY
-    PHP_FE(ev3_battery_current, NULL)
-    PHP_FE(ev3_battery_voltage, NULL)
+    PHP_FUNCTION_ENTRY(ev3_battery_current)
+    PHP_FUNCTION_ENTRY(ev3_battery_voltage)
 
     // LEDs
-    PHP_FE(ev3_led_start, NULL)
-    PHP_FE(ev3_led_set, NULL)
-    PHP_FE(ev3_led_color, NULL)
-    PHP_FE(ev3_led_color_brightness, NULL)
-    PHP_FE(ev3_led_end, NULL)
+    PHP_FUNCTION_ENTRY(ev3_led_start)
+    PHP_FUNCTION_ENTRY(ev3_led_set)
+    PHP_FUNCTION_ENTRY(ev3_led_color)
+    PHP_FUNCTION_ENTRY(ev3_led_color_brightness)
+    PHP_FUNCTION_ENTRY(ev3_led_end)
 
     // MOTORS
-    PHP_FE(ev3_motor_start, NULL)
-    PHP_FE(ev3_motor_info, NULL)
-    PHP_FE(ev3_motor_run, NULL)
-    PHP_FE(ev3_motor_run_without_brake, NULL)
-    PHP_FE(ev3_motor_stop, NULL)
-    PHP_FE(ev3_motor_run_forever, NULL)
-    PHP_FE(ev3_motor_get_position, NULL)
-    PHP_FE(ev3_motor_set_position, NULL)
-    PHP_FE(ev3_motor_wait, NULL)
-    PHP_FE(ev3_motor_end, NULL)
+    PHP_FUNCTION_ENTRY(ev3_motor_start)
+    PHP_FUNCTION_ENTRY(ev3_motor_info)
+    PHP_FUNCTION_ENTRY(ev3_motor_run)
+    PHP_FUNCTION_ENTRY(ev3_motor_run_without_brake)
+    PHP_FUNCTION_ENTRY(ev3_motor_stop)
+    PHP_FUNCTION_ENTRY(ev3_motor_run_forever)
+    PHP_FUNCTION_ENTRY(ev3_motor_get_position)
+    PHP_FUNCTION_ENTRY(ev3_motor_set_position)
+    PHP_FUNCTION_ENTRY(ev3_motor_wait)
+    PHP_FUNCTION_ENTRY(ev3_motor_end)
 
     // SENSORS
-    PHP_FE(ev3_sensor_start, NULL)
-    PHP_FE(ev3_sensor_info, NULL)
-    PHP_FE(ev3_sensor_touch, NULL)
-    PHP_FE(ev3_sensor_ultrasonic, NULL)
-    PHP_FE(ev3_sensor_color, NULL)
-    PHP_FE(ev3_sensor_color_rgb, NULL)
-    PHP_FE(ev3_sensor_infrared_distance, NULL)
-    PHP_FE(ev3_sensor_infrared_pressed, NULL)
-    PHP_FE(ev3_sensor_end, NULL)
+    PHP_FUNCTION_ENTRY(ev3_sensor_start)
+    PHP_FUNCTION_ENTRY(ev3_sensor_info)
+    PHP_FUNCTION_ENTRY(ev3_sensor_touch)
+    PHP_FUNCTION_ENTRY(ev3_sensor_ultrasonic)
+    PHP_FUNCTION_ENTRY(ev3_sensor_color)
+    PHP_FUNCTION_ENTRY(ev3_sensor_color_rgb)
+    PHP_FUNCTION_ENTRY(ev3_sensor_infrared_distance)
+    PHP_FUNCTION_ENTRY(ev3_sensor_infrared_pressed)
+    PHP_FUNCTION_ENTRY(ev3_sensor_end)
 
     // SPEAKER
-    PHP_FE(ev3_speak, NULL)
-    PHP_FE(ev3_speak_background, NULL)
+    PHP_FUNCTION_ENTRY(ev3_speak)
+    PHP_FUNCTION_ENTRY(ev3_speak_background)
 
     {NULL, NULL, NULL}
 };
 
 
 // Module
-zend_module_entry ev3php_module_entry = {
+static zend_module_entry ev3php_module_entry = {
     STANDARD_MODULE_HEADER,
     "ev3php",
     ev3php_functions,
