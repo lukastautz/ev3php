@@ -197,7 +197,7 @@ static int32_t ev3_write_file(char* file, char* buffer, int32_t size) {
 	close(fd);
 	return 0;
 }
-enum ev3_bin_data_format_enum get_data_format(char* buffer) {
+static enum ev3_bin_data_format_enum get_data_format(char* buffer) {
 	if (strcmp(buffer, "u8") == 0) return U8;
 	if (strcmp(buffer, "s8") == 0) return S8;
 	if (strcmp(buffer, "u16") == 0) return U16;
@@ -217,8 +217,7 @@ static void load_sensor(ev3_sensor_ptr sensor, int32_t nr) {
 	sensor->port = atoi(&buffer[12]);
 	sensor->sensor_nr = nr;
 	sensor->bin_fd = -1;
-	int32_t i;
-	for (i = 0; i < 8; i++) sensor->val_fd[i] = -1;
+	for (unsigned short i = 0; i < 8; i++) sensor->val_fd[i] = -1;
 	memset(sensor->bin_data, 0, 32);
 	sprintf(file, "/sys/class/lego-sensor/sensor%i/num_values", nr);
 	ev3_read_file(file, buffer, EV3_STRING_LENGTH);
@@ -1628,8 +1627,7 @@ int32_t ev3_get_led(enum ev3_led_name led, enum ev3_led_color color) {
 }
 */
 static void ev3_quit_led() {
-	int i;
-	for (i = 0; i < 4; i++) close(__ev3_led_fd[i]);
+	for (unsigned short i = 0; i < 4; i++) close(__ev3_led_fd[i]);
 }
 static uint32_t ev3c_current() {
 	char buffer[32];
