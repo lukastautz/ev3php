@@ -5,7 +5,7 @@
 echo "ev3php module builder"
 echo ""
 phpize
-./configure --enable-ev3php --host="arm-linux" CFLAGS="-O9 -Ofast -static" CC="arm-linux-gnueabi-gcc"
+./configure --enable-ev3php --host="arm-linux" CFLAGS="-O9 -Ofast" CC="arm-linux-gnueabi-gcc"
 make
 arm-linux-gnueabi-strip -R .comment modules/ev3php.so
 arm-linux-gnueabi-strip -R .note.gnu.build-id modules/ev3php.so
