@@ -27,7 +27,7 @@ Then you have to run the following command:
 ```bash
 sudo wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/install.sh | sudo sh
 ```
-Or use the *minimal* installer, wich does **NOT** uninstall packages but only disable them. The installation is faster, but you need more space on the micro-SD card.
+Or use the *minimal* installer, wich does **NOT** uninstall packages but only disable them. The installation is faster, but you need more space on the microSD-card.
 ```bash
 sudo wget -O - https://raw.githubusercontent.com/lukastautz/ev3php/main/minimal.sh | sudo sh
 ```
@@ -68,7 +68,7 @@ The main program is in `/ev3php/ev3.php`. If you have edited it and don't want t
 [ev3php/examples](https://github.com/lukastautz/ev3php/tree/main/examples)
 
 ## ev3php Desktop
-ev3php Desktop is a Windows program for managing the ev3 brick. Download: [ev3php-desktop.exe](https://github.com/lukastautz/ev3php/releases/download/ev3php-desktop/ev3php-desktop.exe).
+ev3php Desktop is a Windows program for managing the ev3 brick. Download: [ev3php-desktop.exe](https://github.com/lukastautz/ev3php/releases/download/ev3php-desktop/ev3php-desktop.exe). Currently it is only a windows project, the are no plans for porting! 
 
 ## License
 ev3php is licensed under the GNU General Public License 3.0 (check out [LICENSE](https://github.com/lukastautz/ev3php/blob/main/LICENSE)).
