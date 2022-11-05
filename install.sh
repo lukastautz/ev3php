@@ -1,7 +1,7 @@
 #!/bin/sh
 # ev3php installer
 # Copyright (C) 2022 Lukas Tautz
-EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-0.9/ev3php.so
+EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-1.0/ev3php.so
 apt update
 apt upgrade -y
 echo "PermitRootLogin yes" > /etc/ssh/sshd_config
