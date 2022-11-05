@@ -1,4 +1,3 @@
-
 /*
 EV3PHP v1.0 <https://github.com/lukastautz/ev3php>
 Copyright (C) 2022 Lukas Tautz
