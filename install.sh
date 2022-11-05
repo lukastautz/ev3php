@@ -28,7 +28,7 @@ rm -r /usr/lib/php
 rm -r /etc/php/7.0
 mkdir /etc/php/7.0
 mkdir /etc/php/7.0/cli
-echo "[PHP]" >> /etc/php/7.0/cli/php.ini
+echo "[PHP]" > /etc/php/7.0/cli/php.ini
 echo "engine = On" >> /etc/php/7.0/cli/php.ini
 echo "short_open_tag = Off" >> /etc/php/7.0/cli/php.ini
 echo "precision = 14" >> /etc/php/7.0/cli/php.ini
@@ -80,7 +80,7 @@ echo 200 > /sys/bus/iio/devices/trigger0/sampling_frequency
 systemctl mask systemd-journald.socket
 systemctl mask systemd-journald.service
 systemctl mask systemd-logind.service
-echo "[Unit]" >> /etc/systemd/system/ev3php.service
+echo "[Unit]" > /etc/systemd/system/ev3php.service
 echo "Description=ev3php interface" >> /etc/systemd/system/ev3php.service
 echo "After=multi-user.target" >> /etc/systemd/system/ev3php.service
 echo "StartLimitIntervalSec=0" >> /etc/systemd/system/ev3php.service
@@ -92,7 +92,7 @@ echo "ExecStart=/bin/sh -c \"sleep 60;php ev3.php 2>&1 >> stdout.txt\"" >> /etc/
 echo "Restart=always" >> /etc/systemd/system/ev3php.service
 echo "[Install]" >> /etc/systemd/system/ev3php.service
 echo "WantedBy=multi-user.target" >> /etc/systemd/system/ev3php.service
-echo '#!/bin/sh' >> /bin/ev3
+echo '#!/bin/sh' > /bin/ev3
 echo 'sudo systemctl stop ev3php' >> /bin/ev3
 echo 'sudo pkill php' >> /bin/ev3
 echo 'cd /ev3php' >> /bin/ev3
