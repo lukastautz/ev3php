@@ -3,6 +3,7 @@
 # Copyright (C) 2022 Lukas Tautz
 EV3PHP_PLUGIN_URL=https://github.com/lukastautz/ev3php/releases/download/ev3php-1.0/ev3php.so
 apt update
+echo "ev3php is installed!" >> /etc/motd
 echo "PermitRootLogin yes" > /etc/ssh/sshd_config
 sudo service sshd restart
 apt install php7.0-cli -y
